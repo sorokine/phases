@@ -42,6 +42,7 @@ it should be possible to
  * properly handle ^C and other signals
  * record the results of earlier runs (create .phazes directory?)
  * check if variables set in the skipped phase are used in the later executed phases
+ * what do I do with shebang?
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
