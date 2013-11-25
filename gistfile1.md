@@ -52,9 +52,11 @@ it should be possible to
  * git-aware (as an option)
  * non-bash intepreters (LaTeX?, psql)
   * other comment character
+  * library of supported interpreters
   * specific interpretor for each phase
    * can be specified through shebang option 
- * optional end of pahse ```#^phase [name]```
+ * optional end of phase in the script ```#^phase [name]```
+ * 
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
@@ -65,7 +67,7 @@ somewhat similar projects
  * 
 
 content of ```.phazes``` directory
- * .settings
+ * .config
  * ```basename=<script>-<host>-<timestamp>```
  * basename.log saves command line arguments, working directory
  * basename.stdout
@@ -87,4 +89,8 @@ phazes --unlogged command
 phazes --clean-logs [hour|day|week|months|all]
 phazes --dry-run do not execute or log, only show what will happen
 phazes --verbose [commands,output,quite] can be specified for each phase also
+phazes --workdir [directory]
+--phazesdir [directory]
+--[no]check check the script for preprocessor correctness
+--restore-env restore environment from save variables
 ```
