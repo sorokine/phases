@@ -14,6 +14,7 @@ the script has to load phases library first
 
 implementaion options
  * preprocessor
+  * the scripts can be run outside of phazes environmrnt without modification
  * script
 
 inside the script commands should be called as
@@ -52,7 +53,7 @@ it should be possible to
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
- * 
+ * this is somewhat similar to Makefile, maven or ant but success counts and restarting can be rather tricky especially if you do not have clearly defined or local tragets like is the case with databases and installations
  
 somewhat similar projects
  * https://github.com/dymatic/bpp/blob/master/bpp/sample.bpp
