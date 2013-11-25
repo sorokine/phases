@@ -50,6 +50,7 @@ it should be possible to
  * what do I do with shebang?
  * warning for comments with no space after #
  * git-aware (as an option)
+ * non-bash intepreters (LaTeX?)
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
@@ -65,7 +66,7 @@ content of ```.phazes``` directory
  * basename.log saves command line arguments, working directory
  * basename.stdout
  * basename.err
- * basename-<phase>.env for environment variables
+ * ```basename-<phase>.env``` for environment variables
  * do not allow phazes to run in home directory
  * be able to truncate logs to a certain size
  * --unlogged arguments to the preprocessor or specific phasein the script
@@ -76,8 +77,8 @@ content of ```.phazes``` directory
 
 ```
 phazes schema_init,generate,^load,create_dump dbgen.sh options
-phazes --list
-phazes --continue [run_id]
+phazes --list [command [dates]] list runs info with log sizes
+phazes --continue [command [run timestamp or how many runs previoys]]
 phazes --unlogged command
 phazes --clean-logs [hour|day|week|months|all]
 phazes --dry-run do not execute or log, only show what will happen
