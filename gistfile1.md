@@ -64,6 +64,7 @@ it should be possible to
   * +unfiltered stdout
  * most options can be specified for either command line or in #phase
  * #phase should allow comments after # until the end of the line
+ * subphases
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
