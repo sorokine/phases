@@ -59,6 +59,18 @@ somewhat similar projects
  * https://github.com/dymatic/bpp/blob/master/bpp/sample.bpp
  * 
 
+content of ```.phazes``` directory
+ * .settings
+ * basename=<script>-<host>-<timestamp>
+ * basename.log saves command line arguments, working directory
+ * basename.stdout
+ * basename.err
+ * basename-<phase>.env for environment variables
+ * do not allow phazes to run in home directory
+ * be able to truncate logs to a certain size
+ * --unlogged arguments to the preprocessor or specific phasein the script
+ * --log-pipe='command' pipe log output throu a specified command before saving
+
 ## Examples
 ### loading data into the databse and creating a dump
 
@@ -67,4 +79,7 @@ phazes schema_init,generate,^load,create_dump dbgen.sh options
 phazes --list
 phazes --continue [run_id]
 phazes --unlogged command
+phazes --clean-logs [hour|day|week|months|all]
+phazes --dry-run do not execute or log, only show what will happen
+phazes --verbose [commands,output,quite] can be specified for each phase also
 ```
