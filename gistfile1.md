@@ -61,7 +61,7 @@ somewhat similar projects
 
 content of ```.phazes``` directory
  * .settings
- * basename=<script>-<host>-<timestamp>
+ * ```basename=<script>-<host>-<timestamp>```
  * basename.log saves command line arguments, working directory
  * basename.stdout
  * basename.err
