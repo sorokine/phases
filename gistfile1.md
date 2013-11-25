@@ -30,7 +30,7 @@ it should be possible to
  * specify which phases to run or skip either as a list or as interval or both
  * be able to say 'run the rest' or 'skip the rest'
  * conditional runs or skips of phases
- * commands until the 1st mentioned phase are considered _init and commands after the last phase called _end
+ * commands until the 1st mentioned phase are considered ```_init``` and commands after the last phase called ```_end```
  * see a list phases in a script
  * reporting of phase execution
  * facility for logging
