@@ -36,3 +36,8 @@ it should be possible to
  * facility for logging
  * ability to restart from the point it failed on previous run
  * properly handle ^C and other signals
+ * record the results of earlier runs (create .phazes directory?)
+
+motivation
+ * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
+ * 
