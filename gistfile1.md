@@ -62,6 +62,8 @@ it should be possible to
   * +all stderr
   * +filtered stdout
   * +unfiltered stdout
+ * most options can be specified for either command line or in #phase
+ * #phase should allow comments after # until the end of the line
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
@@ -88,7 +90,8 @@ content of ```.phazes``` directory
 
 ```
 phazes schema_init,generate,^load,create_dump dbgen.sh options
-phazes --list [command [dates]] list runs info with log sizes
+phazes --list [command [dates]]
+--list-logs list runs info with log sizes
 phazes --continue [command [run timestamp or how many runs previoys]] continue from the phase previous execution stopped
 phazes --unlogged command
 phazes --clean-logs [hour|day|week|months|all]
