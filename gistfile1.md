@@ -31,8 +31,12 @@ idea for the name *phazes*
 it should be possible to
  * specify which phases to run or skip either as a list or as interval or both
  * be able to say 'run the rest' or 'skip the rest'
+ * to indicate a phase ti skip use caret ```^```
+ * specify pahse either by name or by sequence
  * conditional runs or skips of phases
+ * either-or phases
  * commands until the 1st mentioned phase are considered ```_init``` and commands after the last phase called ```_end```
+  * special phases are always executed unless explicitly excluded
  * see a list phases in a script
  * reporting of phase execution
  * facility for logging
@@ -43,6 +47,7 @@ it should be possible to
  * record the results of earlier runs (create .phazes directory?)
  * check if variables set in the skipped phase are used in the later executed phases
  * what do I do with shebang?
+ * warning for comments with no space after #
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
@@ -50,3 +55,13 @@ motivation
  
 somewhat similar projects
  * https://github.com/dymatic/bpp/blob/master/bpp/sample.bpp
+ * 
+
+## Examples
+### loading data into the databse and creating a dump
+
+```
+phazes schema_init,generate,^load,create_dump
+phazes --list
+phazes --continue [run_id]
+```
