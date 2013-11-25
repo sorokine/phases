@@ -48,6 +48,7 @@ it should be possible to
  * check if variables set in the skipped phase are used in the later executed phases
  * what do I do with shebang?
  * warning for comments with no space after #
+ * git-aware (as an option)
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
@@ -61,7 +62,8 @@ somewhat similar projects
 ### loading data into the databse and creating a dump
 
 ```
-phazes schema_init,generate,^load,create_dump
+phazes schema_init,generate,^load,create_dump dbgen.sh options
 phazes --list
 phazes --continue [run_id]
+phazes --unlogged command
 ```
