@@ -50,7 +50,8 @@ it should be possible to
  * what do I do with shebang?
  * warning for comments with no space after #
  * git-aware (as an option)
- * non-bash intepreters (LaTeX?)
+ * non-bash intepreters (LaTeX?, psql)
+  * other comment character
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
