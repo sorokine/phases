@@ -101,4 +101,5 @@ phazes --list [command [dates]]
 --phazesdir [directory]
 --[no]check check the script for preprocessor correctness
 --restore-env restore environment from saved variables
+--prereq [phases] phases that must be executed before the specific phase
 ```
