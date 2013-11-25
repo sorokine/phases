@@ -54,6 +54,7 @@ it should be possible to
   * other comment character
   * specific interpretor for each phase
    * can be specified through shebang option 
+ * optional end of pahse ```#^phase [name]```
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
