@@ -52,6 +52,8 @@ it should be possible to
  * git-aware (as an option)
  * non-bash intepreters (LaTeX?, psql)
   * other comment character
+  * specific interpretor for each phase
+   * can be specified through shebang option 
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
