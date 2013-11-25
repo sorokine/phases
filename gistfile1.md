@@ -78,9 +78,9 @@ content of ```.phazes``` directory
  * .config
  * ```basename=<script>-<host>-<timestamp>```
  * basename.log saves command line arguments, working directory
- * basename.stdout
+ * basename.stdout (spli in phases with the sequence number?)
  * basename.err
- * ```basename-<phase>.env``` for environment variables
+ * ```basename-<seq>-<phase>.env``` for environment variables
  * do not allow phazes to run in home directory
  * be able to truncate logs to a certain size
  * --unlogged arguments to the preprocessor or specific phasein the script
