@@ -56,7 +56,12 @@ it should be possible to
   * specific interpretor for each phase
    * can be specified through shebang option 
  * optional end of phase in the script ```#^phase [name]```
- * 
+ * verbosity and logging levels (can be set seprately)
+  * only errors
+  * +phase names
+  * +all stderr
+  * +filtered stdout
+  * +unfiltered stdout
 
 motivation
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
@@ -84,7 +89,7 @@ content of ```.phazes``` directory
 ```
 phazes schema_init,generate,^load,create_dump dbgen.sh options
 phazes --list [command [dates]] list runs info with log sizes
-phazes --continue [command [run timestamp or how many runs previoys]]
+phazes --continue [command [run timestamp or how many runs previoys]] continue from the phase previous execution stopped
 phazes --unlogged command
 phazes --clean-logs [hour|day|week|months|all]
 phazes --dry-run do not execute or log, only show what will happen
@@ -92,5 +97,5 @@ phazes --verbose [commands,output,quite] can be specified for each phase also
 phazes --workdir [directory]
 --phazesdir [directory]
 --[no]check check the script for preprocessor correctness
---restore-env restore environment from save variables
+--restore-env restore environment from saved variables
 ```
