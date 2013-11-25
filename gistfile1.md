@@ -36,7 +36,7 @@ it should be possible to
  * specify pahse either by name or by sequence
  * conditional runs or skips of phases
  * either-or phases
- * commands until the 1st mentioned phase are considered ```_init``` and commands after the last phase called ```_end```
+ * commands until the 1st mentioned phase are considered ```_init``` and commands after the last phase called ```_end``` (or _pre and _post?)
   * special phases are always executed unless explicitly excluded
  * see a list phases in a script
  * reporting of phase execution
@@ -92,12 +92,12 @@ content of ```.phazes``` directory
 phazes schema_init,generate,^load,create_dump dbgen.sh options
 phazes --list [command [dates]]
 --list-logs list runs info with log sizes
-phazes --continue [command [run timestamp or how many runs previoys]] continue from the phase previous execution stopped
-phazes --unlogged command
-phazes --clean-logs [hour|day|week|months|all]
-phazes --dry-run do not execute or log, only show what will happen
-phazes --verbose [commands,output,quite] can be specified for each phase also
-phazes --workdir [directory]
+--continue [command [run timestamp or how many runs previoys]] continue from the phase previous execution stopped
+--unlogged command
+--clean-logs [hour|day|week|months|all]
+--dry-run do not execute or log, only show what will happen
+--verbose [commands,output,quite] can be specified for each phase also
+--workdir [directory]
 --phazesdir [directory]
 --[no]check check the script for preprocessor correctness
 --restore-env restore environment from saved variables
