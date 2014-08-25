@@ -2,7 +2,7 @@ Rather often it is neccesary to execute different parts of a bash script and be 
 
 This is a way to easily throw a command language on top of an existing script.
 
-ideas for implementaion:
+ideas for implementation:
 
 ```phases init,load,dump myscript.sh opt1 opt2 opt3```
 
@@ -12,9 +12,10 @@ or by loading a library in the script
 
 the script has to load phases library first
 
-implementaion options
+implementation options
+
  * preprocessor
-  * the scripts can be run outside of phazes environmrnt without modification
+     * the scripts can be run outside of phazes environmrnt without modification
  * script
 
 inside the script commands should be called as
@@ -24,12 +25,14 @@ inside the script commands should be called as
 OR
 
 boundaries of phases should be put inside comments, e.g. ```#phase init``` 
+
  * needs syntax checker
  * subphasez can be implemented using multiple #
 
 idea for the name *phazes*
 
 it should be possible to
+
  * specify which phases to run or skip either as a list or as interval or both
  * be able to say 'run the rest' or 'skip the rest'
  * to indicate a phase ti skip use caret ```^```
@@ -37,12 +40,12 @@ it should be possible to
  * conditional runs or skips of phases
  * either-or phases
  * commands until the 1st mentioned phase are considered ```_init``` and commands after the last phase called ```_end``` (or _pre and _post?)
-  * special phases are always executed unless explicitly excluded
+     * special phases are always executed unless explicitly excluded
  * see a list phases in a script
  * reporting of phase execution
  * facility for logging
-  * log results of all commands from currrent run seprately into .err and .out files
-  * a log with all script runs with timer, working directory variable values
+     * log results of all commands from currrent run seprately into .err and .out files
+     * a log with all script runs with timer, working directory variable values
  * ability to restart from the point it failed on previous run
  * properly handle ^C and other signals
  * record the results of earlier runs (create .phazes directory?)
@@ -51,30 +54,33 @@ it should be possible to
  * warning for comments with no space after #
  * git-aware (as an option)
  * non-bash intepreters (LaTeX?, psql)
-  * other comment character
-  * library of supported interpreters
-  * specific interpretor for each phase
-   * can be specified through shebang option 
+     * other comment character
+     * library of supported interpreters
+     * specific interpretor for each phase
+          * can be specified through shebang option 
  * optional end of phase in the script ```#^phase [name]```
  * verbosity and logging levels (can be set seprately)
-  * only errors
-  * +phase names
-  * +all stderr
-  * +filtered stdout
-  * +unfiltered stdout
+     * only errors
+     * +phase names
+     * +all stderr
+     * +filtered stdout
+     * +unfiltered stdout
  * most options can be specified for either command line or in #phase
- * #phase should allow comments after # until the end of the line
+ * \#phase should allow comments after # until the end of the line
  * subphases
 
 motivation
+
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
  * this is somewhat similar to Makefile, maven or ant but success counts and restarting can be rather tricky especially if you do not have clearly defined or local tragets like is the case with databases and installations
  
 somewhat similar projects
+
  * https://github.com/dymatic/bpp/blob/master/bpp/sample.bpp
  * 
 
 content of ```.phazes``` directory
+
  * .config
  * ```basename=<script>-<host>-<timestamp>```
  * basename.log saves command line arguments, working directory
