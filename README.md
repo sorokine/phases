@@ -68,6 +68,8 @@ it should be possible to
  * most options can be specified for either command line or in #phase
  * \#phase should allow comments after # until the end of the line
  * subphases
+ * execution only specific lines (until/after/...)
+ * printout what is being executed with optional confirmation
 
 motivation
 
