@@ -1,4 +1,4 @@
-Rather often it is neccesary to execute different parts of a bash script and be able to choose which phases of a bach script has to be executed.  Use cases: long installation scripts, generation of database structures.
+Rather often it is necessary to execute different parts of a shell script and be able to choose which phases of the script has to be executed.  Use cases: long installation scripts, generation of database structures.
 
 This is a way to easily throw a command language on top of an existing script.
 
@@ -15,7 +15,7 @@ the script has to load phases library first
 implementation options
 
  * preprocessor
-     * the scripts can be run outside of phazes environmrnt without modification
+     * the scripts can be run outside of phases environment without modification
  * script
 
 inside the script commands should be called as
@@ -27,9 +27,7 @@ OR
 boundaries of phases should be put inside comments, e.g. ```#phase init``` 
 
  * needs syntax checker
- * subphasez can be implemented using multiple #
-
-idea for the name *phazes*
+ * subphases can be implemented using multiple #
 
 it should be possible to
 
@@ -53,13 +51,13 @@ it should be possible to
  * what do I do with shebang?
  * warning for comments with no space after #
  * git-aware (as an option)
- * non-bash intepreters (LaTeX?, psql)
+ * non-bash interpreters (LaTeX?, psql)
      * other comment character
      * library of supported interpreters
-     * specific interpretor for each phase
+     * specific interpreter for each phase
           * can be specified through shebang option 
  * optional end of phase in the script ```#^phase [name]```
- * verbosity and logging levels (can be set seprately)
+ * verbosity and logging levels (can be set separately)
      * only errors
      * +phase names
      * +all stderr
@@ -74,7 +72,7 @@ it should be possible to
 motivation
 
  * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
- * this is somewhat similar to Makefile, maven or ant but success counts and restarting can be rather tricky especially if you do not have clearly defined or local tragets like is the case with databases and installations
+ * this is somewhat similar to Makefile, maven or ant but success counts and restarting can be rather tricky especially if you do not have clearly defined or local targets like is the case with databases and installations
  
 somewhat similar projects
 
