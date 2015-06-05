@@ -11,6 +11,10 @@ if [[ -z "$PHASES_TMPDIR" ]]; then
   exit 1
 fi
 
+# programs
+SED=sed
+
+
 # help message
 function HELP {
   echo -e "Use:\n\t$PHASES_SCRIPT [-[lh]] <phase1,phase2,...> <script.sh> [arguments]"
