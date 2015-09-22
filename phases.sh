@@ -72,8 +72,6 @@ SCR_BASENAME=$(basename "$TGT_SCRIPT")
 PHASED_SCRIPT="$PHASES_TMPDIR/$SCR_BASENAME"
 echo Temporary script name: ${PHASED_SCRIPT}
 
-# collect remaining arguments
-
 # create a script in temporary directory
 ## extract preamble
 echo Extracting phase init
@@ -92,7 +90,11 @@ echo
 echo "!!! executing phased script !!!"
 chmod +x "$PHASED_SCRIPT"
 "$PHASED_SCRIPT" "${@:$(( OPTIND + 2 ))}"
+excode=$?
+echo "!!! Phased script completed with code $excode !!!"
 
 # Cleanup
 # TODO: cleanup on signal
 rm -fr "$PHASES_TMPDIR"
+
+exit $excode
