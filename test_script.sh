@@ -4,22 +4,22 @@
 
 # everything until the next non-empty line is pre[amble]
 
-#phase init
+echo arguments: "$@"
 
-echo Intialization phase, do something
+echo "Intialization phase, do something"
 
 #phase load
 
-echo Load phase, do something
+echo "Load phase, do something"
 
 #phase process
 
-echo Process phase, do something
+echo "Process phase, do something"
 
 #phase final
 
-echo Final phase, do something
+echo "Final phase, do something"
 
 #phase clean
 
-echo Cleanup phase, do something
+echo "Cleanup phase, do something"
