@@ -17,11 +17,24 @@ SED=gsed
 GREP=grep
 HEAD=ghead
 TAIL=gtail
+TR=gtr
 REAL_TAB=$(echo -e "\t")
+contains () { # from http://stackoverflow.com/questions/14366390/bash-if-condition-check-if-element-is-present-in-array
+  local array="$1[@]"
+  local seeking=$2
+  local in=0
+  for element in "${!array}"; do
+      if [[ "$element" == "$seeking" ]]; then
+          in=1
+          break
+      fi
+  done
+  return "$in"
+}
 
 # help message
 function HELP {
-  echo -e "Use:\n\t$PHASES_SCRIPT -h | <phase1,phase2,...> <script.sh> [script_arguments] | -l <script.sh>"
+  echo -e "Use:\n\t$PHASES_SCRIPT -h | [-s] <phase1,phase2,...> <script.sh> [script_arguments] | -l <script.sh>"
   echo
   echo -e "\t-l <script>\tlist phases in the script"
   echo -e "\t-h\tthis help"
@@ -35,7 +48,7 @@ fi
 
 # commandline option processing
 # options to implement: verbose, debug, save resulting script
-while getopts "l:h" opt; do
+while getopts "l:hs" opt; do
   case $opt in
     l)
       if [ "$#" != 2 ]; then
@@ -46,6 +59,9 @@ while getopts "l:h" opt; do
         ${GREP} -n '^#phase ' "$OPTARG" | ${SED} -e "s/:#phase /$REAL_TAB/" | nl -b a
         exit
       fi
+      ;;
+    s)
+      skip=1
       ;;
       # TODO: verbosity option
       # TODO: nocleanup version
@@ -58,7 +74,6 @@ done
 # parse list of pases into an array
 PHASE_LIST=(${@:$OPTIND:1})
 PHASES=(${PHASE_LIST//,/ })
-echo "Phases to be executed:" "${PHASES[@]:0}"
 
 # make sure that the target script exists
 TGT_SCRIPT="${@:$(( OPTIND + 1 )):1}"
@@ -78,12 +93,32 @@ echo Extracting phase init
 ${SED} -n "1,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 > "$PHASED_SCRIPT"
 echo -e "echo !!! end of implied phase init !!!\necho\n" >> "$PHASED_SCRIPT"
 ## extract remaining phases
-for phase in "${PHASES[@]}"; do
-  echo Extracting phase $phase
-  echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
-  ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
-  echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
-done
+if [[ -z "$skip" ]]; then
+  # use only listed phases
+  echo "Phases to be executed:" "${PHASES[@]:0}"
+  for phase in "${PHASES[@]}"; do
+    echo Extracting phase $phase
+    echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
+    ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
+    echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
+  done
+else
+  # skip phases in the list
+  mapfile -t ALL_PHASES < <(${SED} -n "s/^#phase // p" "$TGT_SCRIPT")
+  echo "Skipping phases '" "${PHASES[@]}" "' from all phases: '" "${ALL_PHASES[@]}" "'"
+  for phase in "${ALL_PHASES[@]}"; do
+    echo "$phase : " $(contains PHASES "$phase")
+    if [[ $(contains PHASES "$phase") ]]; then
+      echo Skipping phase $phase
+      echo -e "echo !!! skipped phase $phase !!!" >> "$PHASED_SCRIPT"
+    else
+      echo Extracting phase $phase
+      echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
+      ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
+      echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
+    fi
+  done
+fi
 
 # execute phased script
 echo
