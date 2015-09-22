@@ -12,6 +12,7 @@ if [[ -z "$PHASES_TMPDIR" ]]; then
 fi
 
 # programss to use and other variables
+# TODO: detect OS and properly set the commands
 SED=gsed
 GREP=grep
 HEAD=ghead
@@ -46,6 +47,8 @@ while getopts "l:h" opt; do
         exit
       fi
       ;;
+      # TODO: verbosity option
+      # TODO: nocleanup version
     h)
       HELP
       ;;
@@ -91,4 +94,5 @@ chmod +x "$PHASED_SCRIPT"
 "$PHASED_SCRIPT" "${@:$(( OPTIND + 2 ))}"
 
 # Cleanup
-#rm -fr "$PHASES_TMPDIR"
+# TODO: cleanup on signal
+rm -fr "$PHASES_TMPDIR"
