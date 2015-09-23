@@ -48,6 +48,7 @@ function print_help {
   echo -e "\t-s|--skip\tskip the phases in the list, run everything else"
   echo -e "\t-v|--verbose\tincrease verbosity, use more v to be more verbose"
   echo -e "\t-n|--noclean\t do not remove temporary directory when finished"
+  echo -e "\t-o|--output=<file>\tsave resulting script in a file, do not execute it"
   exit
 }
 
@@ -87,6 +88,23 @@ while :; do
       ;;
     -n|--noclean)
       clean=0
+      ;;
+    -o|--output)
+      if [ -n "$2" ]; then
+        outp_scr="$2"
+        shift 2
+        continue
+      else
+        printf 'ERROR: "--output" requires a non-empty option argument.\n' >&2
+        exit 1
+      fi
+      ;;
+    --output=?*)
+      outp_scr=${1#*=}
+      ;;
+    --output=)         # Handle the case of an empty --outpute=
+      printf 'ERROR: "--output" requires a non-empty option argument.\n' >&2
+      exit 1
       ;;
     -?*)
       printf 'ERROR: Unknown option: %s\n' "$1" >&2
@@ -131,7 +149,7 @@ trap cleanup EXIT
 
 # name of the preprocessed script
 PHASED_SCRIPT="$PHASES_TMPDIR/$SCR_BASENAME"
-((v>0)) && echo Temporary script name: ${PHASED_SCRIPT}
+((v>0)) && echo Output script name: ${PHASED_SCRIPT}
 
 # parse list of pases into arrays of skipped and used phases
 declare -a USE_PHASES=()
@@ -193,6 +211,8 @@ if [[ "${EXEC_PHASES[0]}" == 'init' ]]; then
   ((v>0)) && echo Extracting phase init
   ${SED} -n "1,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
   echo -e "echo !!! end of implied phase init !!!\necho\n" >> "$PHASED_SCRIPT"
+else
+  printf "echo !!! init phase skipped\n" >> "$PHASED_SCRIPT"
 fi
 
 ## extract remaining phases
@@ -206,11 +226,16 @@ for phase in "${EXEC_PHASES[@]}"; do
 done
 
 # execute phased script
-echo
-echo "!!! executing phased script !!!"
-chmod +x "$PHASED_SCRIPT"
-"$PHASED_SCRIPT" "${@:3}"
-excode=$?
-echo "!!! Phased script completed with code $excode !!!"
+if [[ -n "$outp_scr" ]]; then
+  echo Saving output script into: $outp_scr
+  cp "$PHASED_SCRIPT" "$outp_scr"
+else
+  echo
+  echo "!!! executing phased script !!!"
+  chmod +x "$PHASED_SCRIPT"
+  "$PHASED_SCRIPT" "${@:3}"
+  excode=$?
+  echo "!!! Phased script completed with code $excode !!!"
 
-exit $excode
+  exit $excode
+fi
