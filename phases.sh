@@ -4,7 +4,7 @@
 #
 
 # exit on errors
-set -e
+#set -e
 
 # create temporary directory
 PHASES_SCRIPT=$(basename ${BASH_SOURCE[0]})
@@ -43,7 +43,7 @@ contains () { # from http://stackoverflow.com/questions/14366390/bash-if-conditi
           break
       fi
   done
-  return "$in"
+  echo $in
 }
 
 # help message
@@ -101,7 +101,7 @@ while :; do
 done
 
 # parse list of pases into an array
-declare -a PHASES=( "${1//,/ }" )
+declare -a PHASES=( ${1//,/ } )
 
 # make sure that the target script exists
 TGT_SCRIPT="$2"
@@ -114,6 +114,15 @@ fi
 SCR_BASENAME=$(basename "$TGT_SCRIPT")
 PHASED_SCRIPT="$PHASES_TMPDIR/$SCR_BASENAME"
 echo Temporary script name: ${PHASED_SCRIPT}
+
+# verify that there are no syntax errors in the phases list
+mapfile -t ALL_PHASES < <(${SED} -n "s/^#phase // p" "$TGT_SCRIPT")
+for phase in "${PHASES[@]}"; do
+  if [[ $(contains ALL_PHASES "$phase") == 0 ]]; then
+    echo ERROR: Phase $phase not contained in $TGT_SCRIPT
+    exit 3
+  fi
+done
 
 # create a script in temporary directory
 ## extract preamble
@@ -132,7 +141,6 @@ if [[ -z "$skip" ]]; then
   done
 else
   # skip phases in the list
-  mapfile -t ALL_PHASES < <(${SED} -n "s/^#phase // p" "$TGT_SCRIPT")
   echo "Skipping phases '" "${PHASES[@]}" "' from all phases: '" "${ALL_PHASES[@]}" "'"
   for phase in "${ALL_PHASES[@]}"; do
     echo "$phase : " $(contains PHASES "$phase")
