@@ -3,7 +3,10 @@
 # phases script
 #
 
-# set variables
+# exit on errors
+set -e
+
+# create temporary directory
 PHASES_SCRIPT=$(basename ${BASH_SOURCE[0]})
 PHASES_TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'phases')
 if [[ -z "$PHASES_TMPDIR" ]]; then
@@ -12,20 +15,20 @@ if [[ -z "$PHASES_TMPDIR" ]]; then
 fi
 
 # program names and misc. functions
-# set depending on the OS
+# some program names depend upon the OS
 SED=sed
 GREP=grep
 HEAD=head
 TAIL=tail
 TR=tr
 case "$OSTYPE" in
-  darwin* )
+  darwin*)
     SED=gsed
     HEAD=ghead
     TAIL=gtail
     TR=gtr
     ;;
-  * )
+  *)
     ;;
 esac
 
@@ -44,50 +47,64 @@ contains () { # from http://stackoverflow.com/questions/14366390/bash-if-conditi
 }
 
 # help message
-function HELP {
-  echo -e "Use:\n\t$PHASES_SCRIPT -h | [-s] <phase1,phase2,...> <script.sh> [script_arguments] | -l <script.sh>"
+function print_help {
+  echo -e "Use:\n\t$PHASES_SCRIPT [-h|--help] | [[-s|--skip] <phase1,phase2,...> <script.sh> [script_arguments]] | [-l|--list <script.sh>]"
   echo
-  echo -e "\t-l <script>\tlist phases in the script"
-  echo -e "\t-h\tthis help"
+  echo -e "\t-l|--list <script>\tlist phases in the script"
+  echo -e "\t-h|--help\tthis help"
+  echo -e "\t-s|--skip\tskip the phases in the list, run everything else"
+  echo -e "\t-v|--verbose\tincrease verbosity, use more v to be more verbose"
   exit
 }
 
 if [ "$#" == 0 ]; then
-  echo no arguments
-  HELP
+  echo ERROR: no arguments
+  print_help
 fi
 
 # commandline option processing
 # options to implement: verbose, debug, save resulting script
-while getopts "l:hs" opt; do
-  case $opt in
-    l)
+v=0 # verbosity level
+while :; do
+  case $1 in
+    -h|--help)
+      print_help
+      ;;
+    -v|--verbose)
+      # verbosity level
+      ((v++))
+      ;;
+    -l|--list)
       if [ "$#" != 2 ]; then
-        echo wrong number pf arguments
-        HELP
+        echo wrong number of arguments
+        print_help
       else
         echo "$(printf 'phase#\tline\tname')"
         ${GREP} -n '^#phase ' "$OPTARG" | ${SED} -e "s/:#phase /$REAL_TAB/" | nl -b a
         exit
       fi
       ;;
-    s)
+    -s|--skip)
       skip=1
       ;;
-      # TODO: verbosity option
       # TODO: nocleanup version
-    h)
-      HELP
+    -?*)
+      printf 'ERROR: Unknown option: %s\n' "$1" >&2
+      print_help
+      ;;
+    *)
+      break;
       ;;
   esac
+
+  shift
 done
 
 # parse list of pases into an array
-PHASE_LIST=(${@:$OPTIND:1})
-PHASES=(${PHASE_LIST//,/ })
+declare -a PHASES=( "${1//,/ }" )
 
 # make sure that the target script exists
-TGT_SCRIPT="${@:$(( OPTIND + 1 )):1}"
+TGT_SCRIPT="$2"
 if [[ ! -x "$TGT_SCRIPT" ]]; then
   echo "File $TGT_SCRIPT is not executable or does not exists"
   exit 2
