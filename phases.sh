@@ -8,14 +8,8 @@
 
 # create temporary directory
 PHASES_SCRIPT=$(basename ${BASH_SOURCE[0]})
-PHASES_TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'phases')
-if [[ -z "$PHASES_TMPDIR" ]]; then
-  echo "Unable to create temporary directory $PHASES_TMPDIR" >&2
-  exit 1
-fi
 
-# program names and misc. functions
-# some program names depend upon the OS
+# OS-dependent program names
 SED=sed
 GREP=grep
 HEAD=head
@@ -29,7 +23,9 @@ case "$OSTYPE" in
     ;;
 esac
 
+# utility functions
 REAL_TAB=$(echo -e "\t")
+
 contains () { # from http://stackoverflow.com/questions/14366390/bash-if-condition-check-if-element-is-present-in-array
   local array="$1[@]"
   local seeking=$2
@@ -98,6 +94,8 @@ while :; do
   shift
 done
 
+((v>0)) && echo Verbosity set to $v
+
 # make sure that the target script exists
 TGT_SCRIPT="$2"
 if [[ ! -x "$TGT_SCRIPT" ]]; then
@@ -105,10 +103,18 @@ if [[ ! -x "$TGT_SCRIPT" ]]; then
   exit 2
 fi
 
+# create temporary directory
+PHASES_TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'phases')
+if [[ -z "$PHASES_TMPDIR" ]]; then
+  echo "Unable to create temporary directory $PHASES_TMPDIR" >&2
+  exit 1
+fi
+((v>0)) && echo Temporary working directory set to $PHASES_TMPDIR
+
 # name of the preprocessed script
 SCR_BASENAME=$(basename "$TGT_SCRIPT")
 PHASED_SCRIPT="$PHASES_TMPDIR/$SCR_BASENAME"
-echo Temporary script name: ${PHASED_SCRIPT}
+((v>0)) && echo Temporary script name: ${PHASED_SCRIPT}
 
 # parse list of pases into arrays of skipped and used phases
 declare -a USE_PHASES=()
@@ -124,18 +130,18 @@ for phase in ${1//,/ }; do
     [[ "$phase" != ^* ]] && SKIP_PHASES+=("$phase")
   fi
 done
-echo use phases: "${USE_PHASES[@]}"
-echo skip phases: "${SKIP_PHASES[@]}"
+((v>0)) && echo Use phases: "${USE_PHASES[@]}"
+((v>0)) && echo Skip phases: "${SKIP_PHASES[@]}"
 
 # load list of phases from the target script and add phase 'init'
 mapfile -t ALL_PHASES < <(${SED} -n "s/^#phase // p" "$TGT_SCRIPT")
 ALL_PHASES=('init' ${ALL_PHASES[@]})
-echo phases from the script: "${ALL_PHASES[@]}"
+((v>0)) && echo Phases loaded from the script $TGT_SCRIPT: "${ALL_PHASES[@]}"
 
 # verify that there are no syntax errors in the phases list
 for phase in ${1//,/ }; do
   if [[ $(contains ALL_PHASES "${phase#^}") == 0 ]]; then
-    echo ERROR: Phase $phase not contained in $TGT_SCRIPT >&2
+    echo ERROR: Phase \'$phase\' not contained in $TGT_SCRIPT >&2
     exit 3
   fi
 done
@@ -143,7 +149,7 @@ done
 # make sure that the same phase is not listed both as use and skip
 for phase in "${SKIP_PHASES[@]}"; do
   if [[ $(contains USE_PHASES "${phase}") == 1 ]]; then
-    echo ERROR: Phase $phase both included and skipped: $1 >&2
+    echo ERROR: Phase \'$phase\' both included and skipped: $1 >&2
     exit 4
   fi
 done
@@ -160,14 +166,14 @@ for phase in "${ALL_PHASES[@]}"; do
     fi
   fi
 done
-echo exec phases: "${EXEC_PHASES[@]}"
+((v>0)) && echo Phases to be executed: "${EXEC_PHASES[@]}"
 
 # create a script in temporary directory
 ${TOUCH} "$PHASED_SCRIPT"
 
 ## extract preamble
 if [[ "${EXEC_PHASES[0]}" == 'init' ]]; then
-  echo Extracting phase init
+  ((v>0)) && echo Extracting phase init
   ${SED} -n "1,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
   echo -e "echo !!! end of implied phase init !!!\necho\n" >> "$PHASED_SCRIPT"
 fi
@@ -175,7 +181,7 @@ fi
 ## extract remaining phases
 for phase in "${EXEC_PHASES[@]}"; do
   if [[ "$phase" != 'init' ]]; then # skip phase init that already has been processed
-    echo Extracting phase $phase
+    ((v>0)) && echo Extracting phase $phase
     echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
     ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
     echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
