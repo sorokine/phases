@@ -197,12 +197,12 @@ fi
 
 ## extract remaining phases
 for phase in "${EXEC_PHASES[@]}"; do
-  if [[ "$phase" != 'init' ]]; then # skip phase init that already has been processed
-    ((v>0)) && echo Extracting phase $phase
-    echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
-    ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
-    echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
-  fi
+  [[ "$phase" == 'init' ]] && continue # skip phase init that already has been processed
+
+  ((v>0)) && echo Extracting phase $phase
+  echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
+  ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
+  echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
 done
 
 # execute phased script
