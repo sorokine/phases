@@ -1,4 +1,5 @@
-# phases: Simple non-Invasive bash Preprocessor
+# phases
+## Simple Minimally Invasive bash Preprocessor
 
 The idea is to split a bash script into phases and the executed
 only selected phases from the script.  This taks is often needed
@@ -17,3 +18,9 @@ Do not load files relative to script location
 Run your script as
 
   phases.sh
+
+## Phase list
+
+In skip mode negated phases (```^init```) are simply ignored.
+
+The order of phases in the list does not matter and the sequence phases will always be preserved as in the original script.

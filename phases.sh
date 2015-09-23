@@ -19,14 +19,11 @@ fi
 SED=sed
 GREP=grep
 HEAD=head
-TAIL=tail
-TR=tr
+TOUCH=touch
 case "$OSTYPE" in
   darwin*)
     SED=gsed
     HEAD=ghead
-    TAIL=gtail
-    TR=gtr
     ;;
   *)
     ;;
@@ -65,6 +62,7 @@ fi
 # commandline option processing
 # options to implement: verbose, debug, save resulting script
 v=0 # verbosity level
+skip=0 # treat the list of phases as include list (0) or skip list (1)
 while :; do
   case $1 in
     -h|--help)
@@ -100,13 +98,10 @@ while :; do
   shift
 done
 
-# parse list of pases into an array
-declare -a PHASES=( ${1//,/ } )
-
 # make sure that the target script exists
 TGT_SCRIPT="$2"
 if [[ ! -x "$TGT_SCRIPT" ]]; then
-  echo "File $TGT_SCRIPT is not executable or does not exists"
+  echo "File $TGT_SCRIPT is not executable or does not exists" >&2
   exit 2
 fi
 
@@ -115,53 +110,83 @@ SCR_BASENAME=$(basename "$TGT_SCRIPT")
 PHASED_SCRIPT="$PHASES_TMPDIR/$SCR_BASENAME"
 echo Temporary script name: ${PHASED_SCRIPT}
 
-# verify that there are no syntax errors in the phases list
+# parse list of pases into arrays of skipped and used phases
+declare -a USE_PHASES=()
+declare -a SKIP_PHASES=()
+for phase in ${1//,/ }; do
+  if [[ "$skip" == 0 ]]; then
+    if [[ "$phase" == ^* ]]; then
+      SKIP_PHASES+=("${phase#^}")
+    else
+      USE_PHASES+=("$phase")
+    fi
+  else
+    [[ "$phase" != ^* ]] && SKIP_PHASES+=("$phase")
+  fi
+done
+echo use phases: "${USE_PHASES[@]}"
+echo skip phases: "${SKIP_PHASES[@]}"
+
+# load list of phases from the target script and add phase 'init'
 mapfile -t ALL_PHASES < <(${SED} -n "s/^#phase // p" "$TGT_SCRIPT")
-for phase in "${PHASES[@]}"; do
-  if [[ $(contains ALL_PHASES "$phase") == 0 ]]; then
-    echo ERROR: Phase $phase not contained in $TGT_SCRIPT
+ALL_PHASES=('init' ${ALL_PHASES[@]})
+echo phases from the script: "${ALL_PHASES[@]}"
+
+# verify that there are no syntax errors in the phases list
+for phase in ${1//,/ }; do
+  if [[ $(contains ALL_PHASES "${phase#^}") == 0 ]]; then
+    echo ERROR: Phase $phase not contained in $TGT_SCRIPT >&2
     exit 3
   fi
 done
 
+# make sure that the same phase is not listed both as use and skip
+for phase in "${SKIP_PHASES[@]}"; do
+  if [[ $(contains USE_PHASES "${phase}") == 1 ]]; then
+    echo ERROR: Phase $phase both included and skipped: $1 >&2
+    exit 4
+  fi
+done
+
+# compile the list of phases that will be executed
+declare -a EXEC_PHASES=()
+for phase in "${ALL_PHASES[@]}"; do
+  if [[ $(contains SKIP_PHASES "$phase") == 0 ]]; then
+    if [[ "$skip" == 0 ]]; then
+      [[ "$phase" == 'init' || $(contains USE_PHASES "$phase") == 1 ]] && \
+        EXEC_PHASES+=("$phase")
+      else
+        EXEC_PHASES+=("$phase")
+    fi
+  fi
+done
+echo exec phases: "${EXEC_PHASES[@]}"
+
 # create a script in temporary directory
+${TOUCH} "$PHASED_SCRIPT"
+
 ## extract preamble
-echo Extracting phase init
-${SED} -n "1,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 > "$PHASED_SCRIPT"
-echo -e "echo !!! end of implied phase init !!!\necho\n" >> "$PHASED_SCRIPT"
+if [[ "${EXEC_PHASES[0]}" == 'init' ]]; then
+  echo Extracting phase init
+  ${SED} -n "1,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
+  echo -e "echo !!! end of implied phase init !!!\necho\n" >> "$PHASED_SCRIPT"
+fi
+
 ## extract remaining phases
-if [[ -z "$skip" ]]; then
-  # use only listed phases
-  echo "Phases to be executed:" "${PHASES[@]:0}"
-  for phase in "${PHASES[@]}"; do
+for phase in "${EXEC_PHASES[@]}"; do
+  if [[ "$phase" != 'init' ]]; then # skip phase init that already has been processed
     echo Extracting phase $phase
     echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
     ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
     echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
-  done
-else
-  # skip phases in the list
-  echo "Skipping phases '" "${PHASES[@]}" "' from all phases: '" "${ALL_PHASES[@]}" "'"
-  for phase in "${ALL_PHASES[@]}"; do
-    echo "$phase : " $(contains PHASES "$phase")
-    contains PHASES "$phase"
-    if [[ $? == 1 ]]; then
-      echo Skipping phase $phase
-      echo -e "echo !!! skipped phase $phase !!!" >> "$PHASED_SCRIPT"
-    else
-      echo Extracting phase $phase
-      echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
-      ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
-      echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
-    fi
-  done
-fi
+  fi
+done
 
 # execute phased script
 echo
 echo "!!! executing phased script !!!"
 chmod +x "$PHASED_SCRIPT"
-"$PHASED_SCRIPT" "${@:$(( OPTIND + 2 ))}"
+"$PHASED_SCRIPT" "${@:3}"
 excode=$?
 echo "!!! Phased script completed with code $excode !!!"
 
