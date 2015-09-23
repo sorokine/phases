@@ -11,13 +11,24 @@ if [[ -z "$PHASES_TMPDIR" ]]; then
   exit 1
 fi
 
-# programss to use and other variables
-# TODO: detect OS and properly set the commands
-SED=gsed
+# program names and misc. functions
+# set depending on the OS
+SED=sed
 GREP=grep
-HEAD=ghead
-TAIL=gtail
-TR=gtr
+HEAD=head
+TAIL=tail
+TR=tr
+case "$OSTYPE" in
+  darwin* )
+    SED=gsed
+    HEAD=ghead
+    TAIL=gtail
+    TR=gtr
+    ;;
+  * )
+    ;;
+esac
+
 REAL_TAB=$(echo -e "\t")
 contains () { # from http://stackoverflow.com/questions/14366390/bash-if-condition-check-if-element-is-present-in-array
   local array="$1[@]"
@@ -108,7 +119,8 @@ else
   echo "Skipping phases '" "${PHASES[@]}" "' from all phases: '" "${ALL_PHASES[@]}" "'"
   for phase in "${ALL_PHASES[@]}"; do
     echo "$phase : " $(contains PHASES "$phase")
-    if [[ $(contains PHASES "$phase") ]]; then
+    contains PHASES "$phase"
+    if [[ $? == 1 ]]; then
       echo Skipping phase $phase
       echo -e "echo !!! skipped phase $phase !!!" >> "$PHASED_SCRIPT"
     else
