@@ -13,7 +13,6 @@ PHASES_SCRIPT=$(basename ${BASH_SOURCE[0]})
 SED=sed
 GREP=grep
 HEAD=head
-TOUCH=touch
 case "$OSTYPE" in
   darwin*)
     SED=gsed
@@ -102,7 +101,7 @@ while :; do
     --output=?*)
       outp_scr=${1#*=}
       ;;
-    --output=)         # Handle the case of an empty --outpute=
+    --output=)         # Handle the case of an empty --output=
       printf 'ERROR: "--output" requires a non-empty option argument.\n' >&2
       exit 1
       ;;
@@ -204,7 +203,7 @@ done
 ((v>0)) && echo Phases to be executed: "${EXEC_PHASES[@]}"
 
 # create a script in temporary directory
-${TOUCH} "$PHASED_SCRIPT"
+echo > "$PHASED_SCRIPT"
 
 ## extract preamble
 if [[ "${EXEC_PHASES[0]}" == 'init' ]]; then
@@ -212,17 +211,21 @@ if [[ "${EXEC_PHASES[0]}" == 'init' ]]; then
   ${SED} -n "1,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
   echo -e "echo !!! end of implied phase init !!!\necho\n" >> "$PHASED_SCRIPT"
 else
-  printf "echo !!! init phase skipped\n" >> "$PHASED_SCRIPT"
+  printf "echo !!! skipped phase: init !!! \n" >> "$PHASED_SCRIPT"
 fi
 
 ## extract remaining phases
-for phase in "${EXEC_PHASES[@]}"; do
+for phase in "${ALL_PHASES[@]}"; do
   [[ "$phase" == 'init' ]] && continue # skip phase init that already has been processed
 
-  ((v>0)) && echo Extracting phase $phase
-  echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
-  ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
-  echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
+  if [[ $(contains EXEC_PHASES "$phase") == 1 ]]; then
+    ((v>0)) && echo Extracting phase $phase
+    echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
+    ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
+    echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
+  else
+    printf "echo !!! skipped phase: %s !!!\necho\n" "$phase" >> "$PHASED_SCRIPT"
+  fi
 done
 
 # execute phased script
