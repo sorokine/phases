@@ -47,6 +47,7 @@ function print_help {
   echo -e "\t-h|--help\tthis help"
   echo -e "\t-s|--skip\tskip the phases in the list, run everything else"
   echo -e "\t-v|--verbose\tincrease verbosity, use more v to be more verbose"
+  echo -e "\t-n|--noclean\t do not remove temporary directory when finished"
   exit
 }
 
@@ -55,10 +56,13 @@ if [ "$#" == 0 ]; then
   print_help
 fi
 
-# commandline option processing
-# options to implement: verbose, debug, save resulting script
+# variables from command-line options
 v=0 # verbosity level
 skip=0 # treat the list of phases as include list (0) or skip list (1)
+clean=1 # perform cleanup
+
+# command line option processing
+# TODO: options to implement: save resulting script
 while :; do
   case $1 in
     -h|--help)
@@ -81,7 +85,9 @@ while :; do
     -s|--skip)
       skip=1
       ;;
-      # TODO: nocleanup version
+    -n|--noclean)
+      clean=0
+      ;;
     -?*)
       printf 'ERROR: Unknown option: %s\n' "$1" >&2
       print_help
@@ -98,21 +104,32 @@ done
 
 # make sure that the target script exists
 TGT_SCRIPT="$2"
+SCR_BASENAME=$(basename "$TGT_SCRIPT")
 if [[ ! -x "$TGT_SCRIPT" ]]; then
   echo "File $TGT_SCRIPT is not executable or does not exists" >&2
   exit 2
 fi
 
 # create temporary directory
-PHASES_TMPDIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'phases')
+PHASES_TMPDIR=$(mktemp -d -t "phased-$SCR_BASENAME.XXXXXX")
 if [[ -z "$PHASES_TMPDIR" ]]; then
   echo "Unable to create temporary directory $PHASES_TMPDIR" >&2
   exit 1
 fi
 ((v>0)) && echo Temporary working directory set to $PHASES_TMPDIR
+((clean==0)) && echo Temporary files will be preserved in $PHASES_TMPDIR
+
+# cleanup function
+function cleanup() {
+  if [[ $clean == 1 && -e "$PHASES_TMPDIR" ]]; then
+    rm -fr "$PHASES_TMPDIR"
+    ((v>0)) && echo Removing temporary working directory $PHASES_TMPDIR
+  fi
+}
+
+trap cleanup EXIT
 
 # name of the preprocessed script
-SCR_BASENAME=$(basename "$TGT_SCRIPT")
 PHASED_SCRIPT="$PHASES_TMPDIR/$SCR_BASENAME"
 ((v>0)) && echo Temporary script name: ${PHASED_SCRIPT}
 
@@ -195,9 +212,5 @@ chmod +x "$PHASED_SCRIPT"
 "$PHASED_SCRIPT" "${@:3}"
 excode=$?
 echo "!!! Phased script completed with code $excode !!!"
-
-# Cleanup
-# TODO: cleanup on signal
-rm -fr "$PHASES_TMPDIR"
 
 exit $excode
