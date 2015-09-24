@@ -6,6 +6,10 @@
 # exit on errors
 #set -e
 
+# TODO: specify phases by sequence numbers
+# TODO: verify that error handling in the phased scripts properly works
+# TODO: execution of phases in subshell
+
 # create temporary directory
 PHASES_SCRIPT=$(basename ${BASH_SOURCE[0]})
 
@@ -43,7 +47,7 @@ function contains () { # modified from http://stackoverflow.com/questions/143663
 
 # help message
 function print_help {
-  echo -e "Use:\n\t$PHASES_SCRIPT [-h|--help] | [[-s|--skip] <phase1,phase2,...> <script.sh> [script_arguments]] | [-l|--list <script.sh>]"
+  echo -e "Use:\n\t$PHASES_SCRIPT [-h|--help] | [[-s|--skip] [--] <^init,phase1,[phase2]-[phase4],...> <script.sh> [script_arguments]] | [-l|--list <script.sh>]"
   echo
   echo -e "\t-l|--list <script>\tlist phases in the script"
   echo -e "\t-h|--help\tthis help"
@@ -107,6 +111,10 @@ while :; do
       printf 'ERROR: "--output" requires a non-empty option argument.\n' >&2
       exit 1
       ;;
+    --)
+      shift
+      break
+      ;;
     -?*)
       printf 'ERROR: Unknown option: %s\n' "$1" >&2
       print_help
@@ -120,6 +128,7 @@ while :; do
 done
 
 ((v>0)) && echo Verbosity set to $v
+((v>1)) && echo Using programs: SED=$SED GREP=$GREP HEAD=$HEAD
 
 # make sure that the target script exists
 TGT_SCRIPT="$2"
@@ -170,10 +179,19 @@ for phase in ${1//,/ }; do
       neg=''
     fi
 
-    i0=$(contains ALL_PHASES "${phase%%-*}")
-    i1=$(contains ALL_PHASES "${phase##*-}")
+    # prohibited interval with two open ends
+    if [[ $phase == -*- ]]; then
+      printf "ERROR: malformed interval %s\n" "$phase" >&2
+      exit 8
+    fi
 
-    ((v>2)) && echo Range $phase indices $i0 $i1
+    # interval with open left end, assign to the 0th element
+    [[ ${phase:0:1} == '-' ]] && \
+      i0=0 || i0=$(contains ALL_PHASES "${phase%%-*}")
+    # interval with open right end, assign to the last elemenet
+    [[ ${phase: -1} == '-' ]] && \
+      i1=$((${#ALL_PHASES[@]}-1)) || i1=$(contains ALL_PHASES "${phase##*-}")
+    ((v>1)) && echo Range $phase indices $i0 $i1
 
     if (( i0 < 0 || i1 < 0 || i0 >= i1 )); then
       printf "ERROR: wrong phase range %s (%s-%s)\n" "$neg$phase" $i0 $i1 >&2
