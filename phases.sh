@@ -6,6 +6,7 @@
 # exit on errors
 #set -e
 
+# TODO: phase list consistency checks: warn on duplicates and illegal symbols
 # TODO: specify phases by sequence numbers
 # TODO: verify that error handling in the phased scripts properly works
 # TODO: execution of phases in subshell
