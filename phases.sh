@@ -80,12 +80,13 @@ while :; do
       ((v++))
       ;;
     -l|--list)
-      if [ "$#" != 2 ]; then
+      if [ "$#" -lt 2 ]; then
         echo wrong number of arguments
         print_help
       else
+        [[ "$#" -gt 2 ]] && echo Arguments after $2 ignored
         printf 'phase#\tline\tname\n'
-        ( printf '0\tinit*\n'; ${GREP} -n '^#phase ' "$2" | ${SED} -e "s/:#phase /$REAL_TAB/" ) | nl -b a -v 0
+        ( printf '0\tinit\n'; ${GREP} -n '^#phase ' "$2" | ${SED} -e "s/:#phase /$REAL_TAB/" ) | nl -b a -v 0
         exit
       fi
       ;;
