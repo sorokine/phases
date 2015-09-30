@@ -273,7 +273,11 @@ for phase in "${ALL_PHASES[@]}"; do
   if [[ $(contains EXEC_PHASES "$phase") -ge 0 ]]; then
     ((v>0)) && echo Extracting phase $phase
     echo -e "echo !!! start of phase $phase !!!" >> "$PHASED_SCRIPT"
-    ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
+    if [[ "$phase" != "${ALL_PHASES[-1]}" ]]; then
+      ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
+    else
+      ${SED} -n "/^#phase $phase/,\$p" < "$TGT_SCRIPT" >> "$PHASED_SCRIPT"
+    fi
     echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
   else
     printf "echo !!! skipped phase: %s !!!\necho\n" "$phase" >> "$PHASED_SCRIPT"
