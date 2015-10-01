@@ -6,6 +6,7 @@
 # exit on errors
 #set -e
 
+# TODO: be able to override incl/excl phases (phase that is mentioned later gets a precedent)
 # TODO: phase list consistency checks: warn on duplicates and illegal symbols
 # TODO: specify phases by sequence numbers
 # TODO: verify that error handling in the phased scripts properly works
@@ -276,6 +277,7 @@ for phase in "${ALL_PHASES[@]}"; do
     if [[ "$phase" != "${ALL_PHASES[-1]}" ]]; then
       ${SED} -n "/^#phase $phase/,/^#phase / p" < "$TGT_SCRIPT" | ${HEAD} -n -1 >> "$PHASED_SCRIPT"
     else
+      # keep all lines in the very last section
       ${SED} -n "/^#phase $phase/,\$p" < "$TGT_SCRIPT" >> "$PHASED_SCRIPT"
     fi
     echo -e "echo !!! end of phase $phase !!!\necho\n" >> "$PHASED_SCRIPT"
