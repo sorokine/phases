@@ -1,9 +1,8 @@
 # phases
 ## Minimally Invasive bash Preprocessor
 
-I have to maintain several bash scripts that perform long sequence of steps.  These scripts are either intended to The idea is to split a bash script into phases and the executed
-only selected phases from the script.  This task is often needed
-in the tasks like loading data into the database or similar.
+I have to maintain several shell scripts that perform long but rather simple sequences of steps like loading data into a database or running a simulation model with pre- and post-processing.  Most o the scripts The idea is to split a bash script into phases and the executed
+only selected phases from the script.  
 
 ## Prepare your bash script
 
