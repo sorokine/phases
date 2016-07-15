@@ -13,7 +13,7 @@ Now you can select a phase or several from your script to be executed independen
 phases load test_script.sh
 ```
 
-To executed all other phases except for ```load``` use the option ```--skip```:
+To execute all phases except for ```load``` use the option ```--skip```:
 
 ```
 phases --skip load test_script.sh

@@ -1,85 +1,66 @@
-Rather often it is necessary to execute different parts of a shell script and be able to choose which phases of the script has to be executed.  Use cases: long installation scripts, generation of database structures.
-
-This is a way to easily throw a command language on top of an existing script.
-
-ideas for implementation:
-
-  phases init,load,dump myscript.sh opt1 opt2 opt3
-
-or by loading a library in the script
-
-  myscript.sh phases=init,load,dump opt1 opt2 opt3
-
-the script has to load phases library first
-
-implementation options
-
- * preprocessor
-     * the scripts can be run outside of phases environment without modification
- * script
-
-inside the script commands should be called as
-
-  phase init some_command ....
-
-OR
-
-  boundaries of phases should be put inside comments, e.g. ```#phase init```
-
- * needs syntax checker
- * subphases can be implemented using multiple #
-
-it should be possible to
-
- * specify which phases to run or skip either as a list or as interval or both
- * be able to say 'run the rest' or 'skip the rest'
- * to indicate a phase ti skip use caret ```^```
- * specify phase either by name or by sequence
- * conditional runs or skips of phases
- * either-or phases
- * commands until the 1st mentioned phase are considered ```_init``` and commands after the last phase called ```_end``` (or \_pre and \_post?)
-     * special phases are always executed unless explicitly excluded
- * see a list phases in a script
- * reporting of phase execution
- * facility for logging
+# Features
+ * [ ] syntax checker
+ * [ ] subphases can be implemented using multiple #
+ * [x] be able to say 'run the rest' or 'skip the rest'
+ * [x] to indicate a phase to skip use caret ```^```
+ * [x] specify phase either by name or by sequence
+ * [ ] conditional runs or skips of phases
+ * [ ] either-or phases
+ * [x] list phases in a script
+ * [x] reporting of phase execution
+ * [ ] facility for logging
      * log results of all commands from current run separately into .err and .out files
      * a log with all script runs with timer, working directory variable values
- * ability to restart from the point it failed on previous run
- * properly handle ^C and other signals
- * record the results of earlier runs (create .phases directory?)
- * check if variables set in the skipped phase are used in the later executed phases
- * what do I do with shebang?
- * warning for comments with no space after #
- * git-aware (as an option)
- * non-bash interpreters (LaTeX?, psql)
+ * [ ] ability to restart from the point it failed on previous run
+ * [ ] properly handle ^C and other signals
+ * [ ] record the results of earlier runs (create .phases directory?)
+ * [ ] check if variables set in the skipped phase are used in the later executed phases
+ * [ ] what do I do with the shebang?
+ * [ ] warning for comments with no space after #
+ * [ ] git-aware (as an option)
+ * [ ] non-bash interpreters (LaTeX, psql)
      * other comment character
      * library of supported interpreters
      * specific interpreter for each phase
           * can be specified through shebang option
- * optional end of phase in the script ```#^phase [name]```
- * verbosity and logging levels (can be set separately)
+ * [ ] optional end of phase in the script ```#^phase [name]```
+ * [ ] verbosity and logging levels (can be set separately)
      * only errors
      * +phase names
      * +all stderr
      * +filtered stdout
      * +unfiltered stdout
- * most options can be specified for either command line or in #phase
- * \#phase should allow comments after # until the end of the line
- * subphases
- * execution only specific lines (until/after/...)
- * printout what is being executed with optional confirmation
+ * [x] most options can be specified for either command line or in #phase
+ * [ ] execution only specific lines (until/after/...)
+ * [ ] printout what is being executed with optional confirmation
+ * [ ] do not allow phases to be run in home directory
+ * [ ] truncate logs to a certain size
 
-motivation
+# Ideas for Command-line Options
+ * [ ] --unlogged arguments to the preprocessor or specific phase in the script
+ * [ ] --log-pipe='command' pipe log output through a specified command before saving
+ * [ ] --list-logs list runs information with log sizes
+ * [ ] --continue [command [run timestamp or how many run previously]] continue from the phase previous execution stopped
+ * [ ] --unlogged command
+ * [ ] --clean-logs [hour|day|week|months|all]
+ * [ ] --dry-run do not execute or log, only show what will happen
+ * [ ] --verbose [commands,output,quite] can be specified for each phase also
+ * [ ] --workdir [directory]
+ * [ ] --phasesdir [directory]
+ * [ ] --[no]check check the script for preprocessor correctness
+ * [ ] --restore-env restore environment from saved variables
+ * [ ] --prereq [phases] phases that must be executed before the specific phase
 
- * if implemented with standard bash facilities the script becomes long and it is hard to grasp how it works
- * this is somewhat similar to Makefile, maven or ant but success counts and restarting can be rather tricky especially if you do not have clearly defined or local targets like is the case with databases and installations
+# Motivation
 
-somewhat similar projects
+ * if implemented with standard bash facilities the original script becomes too long and it is hard to grasp what it does
+ * the goal of phases is somewhat similar to Makefile, maven or ant but  targets are hard to define if they cannot be presented as files
 
- * https://github.com/dymatic/bpp/blob/master/bpp/sample.bpp
-  * actually generates a bash script from a file  
+# Similar projects
 
-content of ```.phases``` directory
+ * https://github.com/dymatic/bpp/blob/master/bpp/sample.bpp but it is doing something completely different
+
+# Content of the ```.phases``` directory
 
  * .config
  * ```basename=<script>-<host>-<timestamp>```
@@ -87,24 +68,11 @@ content of ```.phases``` directory
  * basename.stdout (split in phases with the sequence number?)
  * basename.err
  * ```basename-<seq>-<phase>.env``` for environment variables
- * do not allow phases to run in home directory
- * be able to truncate logs to a certain size
- * --unlogged arguments to the preprocessor or specific phase in the script
- * --log-pipe='command' pipe log output through a specified command before saving
 
 ## Examples
 ### loading data into the database and creating a dump
 
+```
   phases schema_init,generate,^load,create_dump dbgen.sh options
   phases --list [command [dates]]
-  --list-logs list runs info with log sizes
-  --continue [command [run timestamp or how many run previously]] continue from the phase previous execution stopped
-  --unlogged command
-  --clean-logs [hour|day|week|months|all]
-  --dry-run do not execute or log, only show what will happen
-  --verbose [commands,output,quite] can be specified for each phase also
-  --workdir [directory]
-  --phasesdir [directory]
-  --[no]check check the script for preprocessor correctness
-  --restore-env restore environment from saved variables
-  --prereq [phases] phases that must be executed before the specific phase
+```
