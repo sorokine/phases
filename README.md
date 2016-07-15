@@ -53,7 +53,8 @@ Any script starts with an implied phase ```init``` that starts at the first line
 
 ### Details
 
-In skip mode negated phases are simply ignored.  The order of phases in the list does not matter and the sequence phases will always be preserved as in the original script.
+ * In skip mode negated phases are simply ignored.  
+ * The order of phases in the list does not matter and the sequence phases will always be preserved as in the original script.
 
 ## Other Useful Options
 
@@ -68,4 +69,4 @@ Use ```--output``` option to save resulting script into a file instead of execut
 # Limitations
 
 1.  Inside your script do not use file paths relative to the script location
-2.  The names of the phases should contain punctuation or special characters
+2.  The names of the phases should not contain punctuation or special characters
