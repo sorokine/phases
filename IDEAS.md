@@ -1,4 +1,5 @@
 # Features
+ * [ ] ineractive mode: ask before proceeding to the next phase
  * [ ] syntax checker
  * [ ] subphases can be implemented using multiple #
  * [x] be able to say 'run the rest' or 'skip the rest'
