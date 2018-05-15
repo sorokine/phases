@@ -3,6 +3,10 @@
 
 I have to maintain several shell scripts that perform long sequences of steps like loading data into a database or running a simulation model with pre- and post-processing of the data.  There are often failures and scripts has to be rerun starting at some point.  With this preprocessor one can define sections of the script that can be selected for execution using command line parameters.  
 
+## Install
+
+On Mac GNU sed and coreutils required.  They should be prefixed with 'g' (e.g., gsed, ghead).  Install them as `brew install coreutils`, do NOT use --with-default-names option.
+
 ## Usage
 
 Insert the directive ```#phase <name>``` into your script to split the script into sections.  Use ```test_script.sh``` as an example.  Give some meaningful name for each phase.  
